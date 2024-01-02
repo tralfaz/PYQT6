@@ -30,6 +30,8 @@ class DialogOptionsWidget(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self._zeroOpts = 0
+        
         self.layout = QVBoxLayout()
         self.checkBoxEntries = []
 
@@ -45,11 +47,14 @@ class DialogOptionsWidget(QGroupBox):
         self.layout.addItem(QSpacerItem(0, 0, QSizePolicy.Policy.Ignored,
                                         QSizePolicy.Policy.MinimumExpanding))
 
+    def setZeroOpts(self, zeroOpts):
+        self._zeroOpts = zeroOpts
+
     def value(self):
-        result = 0
+        result = self._zeroOpts
         for cbe in self.checkBoxEntries:
             if cbe[0].isChecked():
-                result |= cbe[1]
+                result = result | cbe[1]
         return result
 
 
@@ -110,17 +115,22 @@ class Dialog(QWidget):
         fontButton = QPushButton("QFontDialog::get&Font()")
         fontButton.clicked.connect(self.setFontCB)
 
-        directoryLabel = QLabel()
-        directoryLabel.setFrameStyle(frameStyle)
+        self.directoryLabel = QLabel()
+        self.directoryLabel.setFrameStyle(frameStyle)
         directoryButton = QPushButton("QFileDialog::getE&xistingDirectory()")
+        directoryButton.clicked.connect(self.setExistingDirectoryCB)
 
-        openFileNameLabel = QLabel()
-        openFileNameLabel.setFrameStyle(frameStyle)
+        self.openFileNameLabel = QLabel()
+        self.openFileNameLabel.setFrameStyle(frameStyle)
         openFileNameButton = QPushButton("QFileDialog::get&OpenFileName()")
+        openFileNameButton.clicked.connect(self.setOpenFileNameCB)
 
-        openFileNamesLabel = QLabel()
-        openFileNamesLabel.setFrameStyle(frameStyle)
+        self.openFilesPath = ""
+        self._openFilesSelectedFilter = ""
+        self.openFileNamesLabel = QLabel()
+        self.openFileNamesLabel.setFrameStyle(frameStyle)
         openFileNamesButton = QPushButton("QFileDialog::&getOpenFileNames()")
+        openFileNamesButton.clicked.connect(self.setOpenFileNamesCB)
 
         saveFileNameLabel = QLabel()
         saveFileNameLabel.setFrameStyle(frameStyle)
@@ -144,12 +154,6 @@ class Dialog(QWidget):
 
         errorButton = QPushButton("QErrorMessage::showM&essage()")
 
-#    connect(directoryButton, &QAbstractButton::clicked,
-#            this, &Dialog::setExistingDirectory);
-#    connect(openFileNameButton, &QAbstractButton::clicked,
-#            this, &Dialog::setOpenFileName);
-#    connect(openFileNamesButton, &QAbstractButton::clicked,
-#            this, &Dialog::setOpenFileNames);
 #    connect(saveFileNameButton, &QAbstractButton::clicked,
 #            this, &Dialog::setSaveFileName);
 #    connect(criticalButton, &QAbstractButton::clicked, this, &Dialog::criticalMessage);
@@ -186,23 +190,16 @@ class Dialog(QWidget):
         layout.setColumnStretch(1, 1)
         layout.addWidget(colorButton, 0, 0)
         layout.addWidget(self.colorLabel, 0, 1)
-        colorDialogOptionsWidget = DialogOptionsWidget()
-
-
- 
-
-        cdopt = QColorDialog.ColorDialogOption.DontUseNativeDialog
-        colorDialogOptionsWidget.addCheckBox(doNotUseNativeDialog, cdopt)
-
-        cdopt = QColorDialog.ColorDialogOption.ShowAlphaChannel
-        colorDialogOptionsWidget.addCheckBox("Show alpha channel" , cdopt)
-        cdopt = QColorDialog.ColorDialogOption.NoButtons
-        colorDialogOptionsWidget.addCheckBox("No buttons" , cdopt)
+        cdOptWGT = self.colorDialogOptionsWidget = DialogOptionsWidget()
+        cdOptWGT.setZeroOpts(QColorDialog.ColorDialogOption(0))
+        cdopt = QColorDialog.ColorDialogOption
+        cdOptWGT.addCheckBox(doNotUseNativeDialog, cdopt.DontUseNativeDialog)
+        cdOptWGT.addCheckBox("Show alpha channel" , cdopt.ShowAlphaChannel)
+        cdOptWGT.addCheckBox("No buttons" , cdopt.NoButtons)
         layout.addItem(QSpacerItem(0, 0, QSizePolicy.Policy.Ignored,
                                          QSizePolicy.Policy.MinimumExpanding),
                        1, 0)
-        layout.addWidget(colorDialogOptionsWidget, 2, 0, 1, 2)
-
+        layout.addWidget(cdOptWGT, 2, 0, 1, 2)
         toolbox.addItem(page, "Color Dialog")
 
         page = QWidget()
@@ -210,57 +207,48 @@ class Dialog(QWidget):
         layout.setColumnStretch(1, 1)
         layout.addWidget(fontButton, 0, 0)
         layout.addWidget(self.fontLabel, 0, 1)
-        fontDialogOptionsWidget = DialogOptionsWidget()
+        self.fontDialogOptionsWidget = fdOptWGT = DialogOptionsWidget()
+        fdOptWGT.setZeroOpts(QFontDialog.FontDialogOption(0))
+        
         fdopt = QFontDialog.FontDialogOption
-        fontDialogOptionsWidget.addCheckBox(doNotUseNativeDialog,
-                                            QFontDialog.FontDialogOption.DontUseNativeDialog)
-        fontDialogOptionsWidget.addCheckBox("Show scalable fonts",
-                                            QFontDialog.FontDialogOption.ScalableFonts)
-        fontDialogOptionsWidget.addCheckBox("Show non scalable fonts",
-                                            QFontDialog.FontDialogOption.NonScalableFonts)
-        fontDialogOptionsWidget.addCheckBox("Show monospaced fonts",
-                                            QFontDialog.FontDialogOption.MonospacedFonts);
-        fontDialogOptionsWidget.addCheckBox("Show proportional fonts",
-                                            fdopt.ProportionalFonts)
-        fontDialogOptionsWidget.addCheckBox("No buttons" ,
-                                            fdopt.NoButtons)
+        fdOptWGT.addCheckBox(doNotUseNativeDialog, fdopt.DontUseNativeDialog)
+        fdOptWGT.addCheckBox("Show scalable fonts", fdopt.ScalableFonts)
+        fdOptWGT.addCheckBox("Show non scalable fonts", fdopt.NonScalableFonts)
+        fdOptWGT.addCheckBox("Show monospaced fonts", fdopt.MonospacedFonts)
+        fdOptWGT.addCheckBox("Show proportional fonts", fdopt.ProportionalFonts)
+        fdOptWGT.addCheckBox("No buttons", fdopt.NoButtons)
         layout.addItem(QSpacerItem(0, 0, QSizePolicy.Policy.Ignored,
                                          QSizePolicy.Policy.MinimumExpanding),
                        1, 0)
-        layout.addWidget(fontDialogOptionsWidget, 2, 0, 1 ,2)
+        layout.addWidget(fdOptWGT, 2, 0, 1 ,2)
         toolbox.addItem(page, "Font Dialog")
 
         page = QWidget()
         layout = QGridLayout(page)
         layout.setColumnStretch(1, 1);
         layout.addWidget(directoryButton, 0, 0)
-        layout.addWidget(directoryLabel, 0, 1)
+        layout.addWidget(self.directoryLabel, 0, 1)
         layout.addWidget(openFileNameButton, 1, 0)
-        layout.addWidget(openFileNameLabel, 1, 1)
+        layout.addWidget(self.openFileNameLabel, 1, 1)
         layout.addWidget(openFileNamesButton, 2, 0)
-        layout.addWidget(openFileNamesLabel, 2, 1)
+        layout.addWidget(self.openFileNamesLabel, 2, 1)
         layout.addWidget(saveFileNameButton, 3, 0)
         layout.addWidget(saveFileNameLabel, 3, 1)
-        fileDialogOptionsWidget = DialogOptionsWidget()
+        fdOptWGT = self.fileDialogOptionsWidget = DialogOptionsWidget()
+        fdOptWGT.setZeroOpts(QFileDialog.Option(0))
         fdopt = QFileDialog.Option
-        fileDialogOptionsWidget.addCheckBox(doNotUseNativeDialog,
-                                            fdopt.DontUseNativeDialog)
-        fileDialogOptionsWidget.addCheckBox("Show directories only",
-                                            fdopt.ShowDirsOnly);
-        fileDialogOptionsWidget.addCheckBox("Do not resolve symlinks",
-                                            fdopt.DontResolveSymlinks)
-        fileDialogOptionsWidget.addCheckBox("Do not confirm overwrite",
-                                            fdopt.DontConfirmOverwrite)
-        fileDialogOptionsWidget.addCheckBox("Readonly",
-                                            fdopt.ReadOnly)
-        fileDialogOptionsWidget.addCheckBox("Hide name filter details",
-                                            fdopt.HideNameFilterDetails)
-        fileDialogOptionsWidget.addCheckBox("Do not use custom directory icons (Windows)",
-                                            fdopt.DontUseCustomDirectoryIcons)
+        fdOptWGT.addCheckBox(doNotUseNativeDialog, fdopt.DontUseNativeDialog)
+        fdOptWGT.addCheckBox("Show directories only", fdopt.ShowDirsOnly)
+        fdOptWGT.addCheckBox("Do not resolve symlinks", fdopt.DontResolveSymlinks)
+        fdOptWGT.addCheckBox("Do not confirm overwrite", fdopt.DontConfirmOverwrite)
+        fdOptWGT.addCheckBox("Readonly", fdopt.ReadOnly)
+        fdOptWGT.addCheckBox("Hide name filter details", fdopt.HideNameFilterDetails)
+        fdOptWGT.addCheckBox("Do not use custom directory icons (Windows)",
+                             fdopt.DontUseCustomDirectoryIcons)
         layout.addItem(QSpacerItem(0, 0, QSizePolicy.Policy.Ignored,
-                                   QSizePolicy.Policy.MinimumExpanding),
+                                         QSizePolicy.Policy.MinimumExpanding),
                        4, 0)
-        layout.addWidget(fileDialogOptionsWidget, 5, 0, 1 ,2)
+        layout.addWidget(fdOptWGT, 5, 0, 1 ,2)
         toolbox.addItem(page, "File Dialogs")
 
         page = QWidget()
@@ -317,10 +305,7 @@ class Dialog(QWidget):
             self.multiLineTextLabel.setText(text)
 
     def setColorCB(self):
-#        options = QColorDialog.ColorDialogOption.DontUseNativeDialog
-#        options = QColorDialog.ColorDialogOption.NoButtons
-#        options = QColorDialog.ColorDialogOption.ShowAlphaChannel
-        options = QColorDialog().options()
+        options = self.colorDialogOptionsWidget.value()
         color = QColorDialog.getColor(QtCore.Qt.GlobalColor.green, self,
                                       "Select Color", options)
         if color.isValid():
@@ -329,59 +314,61 @@ class Dialog(QWidget):
             self.colorLabel.setAutoFillBackground(True)
 
     def setFontCB(self):
-        options = QFileDialog().options() 
-        print("OPTS: ", type(options))
+        fdOpts = self.fontDialogOptionsWidget.value()
         description = self.fontLabel.text()
         defaultFont = QFont()
         if description:
             defaultFont.fromString(description)
-        font,ok = QFontDialog.getFont(defaultFont, self, "Select Font")#, options)
+        font,ok = QFontDialog.getFont(defaultFont, self, "Select Font", fdOpts)
         if ok:
             self.fontLabel.setText(font.key())
             self.fontLabel.setFont(font)
 
-#void Dialog::setExistingDirectory()
-#{
-#    QFileDialog::Options options = QFlag(fileDialogOptionsWidget->value());
-#    options |= QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
-#    QString directory = QFileDialog::getExistingDirectory(this,
-#                                tr("QFileDialog::getExistingDirectory()"),
-#                                directoryLabel->text(),
-#                                options);
-#    if (!directory.isEmpty())
-#        directoryLabel->setText(directory);
-#}
-#
-#void Dialog::setOpenFileName()
-#{
-#    const QFileDialog::Options options = QFlag(fileDialogOptionsWidget->value());
-#    QString selectedFilter;
-#    QString fileName = QFileDialog::getOpenFileName(this,
-#                                tr("QFileDialog::getOpenFileName()"),
-#                                openFileNameLabel->text(),
-#                                tr("All Files (*);;Text Files (*.txt)"),
-#                                &selectedFilter,
-#                                options);
-#    if (!fileName.isEmpty())
-#        openFileNameLabel->setText(fileName);
-#}
-#
-#void Dialog::setOpenFileNames()
-#{
-#    const QFileDialog::Options options = QFlag(fileDialogOptionsWidget->value());
-#    QString selectedFilter;
-#    QStringList files = QFileDialog::getOpenFileNames(
-#                                this, tr("QFileDialog::getOpenFileNames()"),
-#                                openFilesPath,
-#                                tr("All Files (*);;Text Files (*.txt)"),
-#                                &selectedFilter,
-#                                options);
-#    if (files.count()) {
-#        openFilesPath = files[0];
-#        openFileNamesLabel->setText(QString("[%1]").arg(files.join(", ")));
-#    }
-#}
-#
+    def setExistingDirectoryCB(self):
+        options = self.fileDialogOptionsWidget.value()
+        options = options | QFileDialog.Option.DontResolveSymlinks
+        options = options | QFileDialog.Option.ShowDirsOnly
+
+        directory = QFileDialog.getExistingDirectory(self,
+                                                     "QFileDialog::getExistingDirectory()",
+                                                     self.directoryLabel.text(),
+                                                     options)
+        if directory:
+            self.directoryLabel.setText(directory)
+
+    def setOpenFileNameCB(self):
+        options = self.fileDialogOptionsWidget.value()
+
+        caption = "QFileDialog::getOpenFileName()"
+        dirName = self.openFileNameLabel.text()
+        filter = "all files (*);;text files (*.txt)"
+        initFilter = ""
+
+        fileName, selectedFilter = QFileDialog.getOpenFileName(self, caption,
+                                                               dirName, filter,
+                                                               initFilter,
+                                                               options)
+        if fileName:
+            self.openFileNameLabel.setText(fileName)
+
+    def setOpenFileNamesCB(self):
+        options = self.fileDialogOptionsWidget.value()
+
+        caption = "QFileDialog::getOpenFileNames()"
+        dirName = self.openFilesPath
+        filters  = "All Files (*);;Text Files (*.txt)"
+        initFltr = self._openFilesSelectedFilter
+
+        files, selFltr = QFileDialog.getOpenFileNames(self, caption,
+                                                      dirName, 
+                                                      filters, initFltr,
+                                                      options)
+
+        if files:
+            self.openFilesPath = files[0]
+            self._openFilesSelectedFilter = selFltr
+            self.openFileNamesLabel.setText(", ".join(files))
+
 #void Dialog::setSaveFileName()
 #{
 #    const QFileDialog::Options options = QFlag(fileDialogOptionsWidget->value());
