@@ -1,6 +1,12 @@
+from PyQt6           import QtCore
+from PyQt6.QtCore    import QDir
+from PyQt6.QtGui     import QColorConstants
+from PyQt6.QtGui     import QFont
 from PyQt6.QtGui     import QGuiApplication
+from PyQt6.QtGui     import QPalette
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtWidgets import QCheckBox
+from PyQt6.QtWidgets import QColorDialog
 from PyQt6.QtWidgets import QErrorMessage
 from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtWidgets import QFontDialog
@@ -10,6 +16,7 @@ from PyQt6.QtWidgets import QGroupBox
 from PyQt6.QtWidgets import QHBoxLayout
 from PyQt6.QtWidgets import QInputDialog
 from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QLineEdit
 from PyQt6.QtWidgets import QPushButton
 from PyQt6.QtWidgets import QSizePolicy
 from PyQt6.QtWidgets import QSpacerItem
@@ -73,29 +80,35 @@ class Dialog(QWidget):
         integerButton = QPushButton("QInputDialog::get&Int()")
         integerButton.clicked.connect(self.setIntegerCB)
         
-        doubleLabel = QLabel()
-        doubleLabel.setFrameStyle(frameStyle)
+        self.doubleLabel = QLabel()
+        self.doubleLabel.setFrameStyle(frameStyle)
         doubleButton = QPushButton("QInputDialog::get&Double()")
+        doubleButton.clicked.connect(self.setDoubleCB)
 
-        itemLabel = QLabel()
-        itemLabel.setFrameStyle(frameStyle)
+        self.itemLabel = QLabel()
+        self.itemLabel.setFrameStyle(frameStyle)
         itemButton = QPushButton("QInputDialog::getIte&m()")
+        itemButton.clicked.connect(self.setItemCB)
 
-        textLabel = QLabel()
-        textLabel.setFrameStyle(frameStyle)
+        self.textLabel = QLabel()
+        self.textLabel.setFrameStyle(frameStyle)
         textButton = QPushButton("QInputDialog::get&Text()")
+        textButton.clicked.connect(self.setTextCB)
 
-        multiLineTextLabel = QLabel()
-        multiLineTextLabel.setFrameStyle(frameStyle)
+        self.multiLineTextLabel = QLabel()
+        self.multiLineTextLabel.setFrameStyle(frameStyle)
         multiLineTextButton = QPushButton("QInputDialog::get&MultiLineText()")
+        multiLineTextButton.clicked.connect(self.setMultiLineTextCB)
 
-        colorLabel = QLabel()
-        colorLabel.setFrameStyle(frameStyle)
+        self.colorLabel = QLabel()
+        self.colorLabel.setFrameStyle(frameStyle)
         colorButton = QPushButton("QColorDialog::get&Color()")
+        colorButton.clicked.connect(self.setColorCB)
 
-        fontLabel = QLabel()
-        fontLabel.setFrameStyle(frameStyle)
+        self.fontLabel = QLabel()
+        self.fontLabel.setFrameStyle(frameStyle)
         fontButton = QPushButton("QFontDialog::get&Font()")
+        fontButton.clicked.connect(self.setFontCB)
 
         directoryLabel = QLabel()
         directoryLabel.setFrameStyle(frameStyle)
@@ -131,12 +144,6 @@ class Dialog(QWidget):
 
         errorButton = QPushButton("QErrorMessage::showM&essage()")
 
-#    connect(doubleButton, &QAbstractButton::clicked, this, &Dialog::setDouble);
-#    connect(itemButton, &QAbstractButton::clicked, this, &Dialog::setItem);
-#    connect(textButton, &QAbstractButton::clicked, this, &Dialog::setText);
-#    connect(multiLineTextButton, &QAbstractButton::clicked, this, &Dialog::setMultiLineText);
-#    connect(colorButton, &QAbstractButton::clicked, this, &Dialog::setColor);
-#    connect(fontButton, &QAbstractButton::clicked, this, &Dialog::setFont);
 #    connect(directoryButton, &QAbstractButton::clicked,
 #            this, &Dialog::setExistingDirectory);
 #    connect(openFileNameButton, &QAbstractButton::clicked,
@@ -159,13 +166,13 @@ class Dialog(QWidget):
         layout.addWidget(integerButton, 0, 0)
         layout.addWidget(self.integerLabel, 0, 1)
         layout.addWidget(doubleButton, 1, 0)
-        layout.addWidget(doubleLabel, 1, 1)
+        layout.addWidget(self.doubleLabel, 1, 1)
         layout.addWidget(itemButton, 2, 0)
-        layout.addWidget(itemLabel, 2, 1)
+        layout.addWidget(self.itemLabel, 2, 1)
         layout.addWidget(textButton, 3, 0)
-        layout.addWidget(textLabel, 3, 1)
+        layout.addWidget(self.textLabel, 3, 1)
         layout.addWidget(multiLineTextButton, 4, 0)
-        layout.addWidget(multiLineTextLabel, 4, 1)
+        layout.addWidget(self.multiLineTextLabel, 4, 1)
         layout.addItem(QSpacerItem(0, 0,
                                    QSizePolicy.Policy.Ignored,
                                    QSizePolicy.Policy.MinimumExpanding),
@@ -178,13 +185,23 @@ class Dialog(QWidget):
         layout = QGridLayout(page)
         layout.setColumnStretch(1, 1)
         layout.addWidget(colorButton, 0, 0)
-        layout.addWidget(colorLabel, 0, 1)
-#        colorDialogOptionsWidget = DialogOptionsWidget()
-#        colorDialogOptionsWidget->addCheckBox(doNotUseNativeDialog, QColorDialog::DontUseNativeDialog);
-#        colorDialogOptionsWidget->addCheckBox(tr("Show alpha channel") , QColorDialog::ShowAlphaChannel);
-#        colorDialogOptionsWidget->addCheckBox(tr("No buttons") , QColorDialog::NoButtons);
-#        layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 1, 0);
-#    layout->addWidget(colorDialogOptionsWidget, 2, 0, 1 ,2);
+        layout.addWidget(self.colorLabel, 0, 1)
+        colorDialogOptionsWidget = DialogOptionsWidget()
+
+
+ 
+
+        cdopt = QColorDialog.ColorDialogOption.DontUseNativeDialog
+        colorDialogOptionsWidget.addCheckBox(doNotUseNativeDialog, cdopt)
+
+        cdopt = QColorDialog.ColorDialogOption.ShowAlphaChannel
+        colorDialogOptionsWidget.addCheckBox("Show alpha channel" , cdopt)
+        cdopt = QColorDialog.ColorDialogOption.NoButtons
+        colorDialogOptionsWidget.addCheckBox("No buttons" , cdopt)
+        layout.addItem(QSpacerItem(0, 0, QSizePolicy.Policy.Ignored,
+                                         QSizePolicy.Policy.MinimumExpanding),
+                       1, 0)
+        layout.addWidget(colorDialogOptionsWidget, 2, 0, 1, 2)
 
         toolbox.addItem(page, "Color Dialog")
 
@@ -192,7 +209,7 @@ class Dialog(QWidget):
         layout = QGridLayout(page)
         layout.setColumnStretch(1, 1)
         layout.addWidget(fontButton, 0, 0)
-        layout.addWidget(fontLabel, 0, 1)
+        layout.addWidget(self.fontLabel, 0, 1)
         fontDialogOptionsWidget = DialogOptionsWidget()
         fdopt = QFontDialog.FontDialogOption
         fontDialogOptionsWidget.addCheckBox(doNotUseNativeDialog,
@@ -270,85 +287,59 @@ class Dialog(QWidget):
                                       "Percentage:", 25, 0, 100, 1)
         if ok:
             self.integerLabel.setText(f"{ival}")
+ 
+    def setDoubleCB(self):
+        dval,ok = QInputDialog.getDouble(self, "QInputDialog::getDouble()",
+                                         "Amount:", 37.56, -10000, 10000, 2,
+                                         self.windowFlags(), 1)
+        if ok:
+            self.doubleLabel.setText(f"{dval}")
 
-#void Dialog::setDouble()
-#{
-#//! [1]
-#    bool ok;
-#    double d = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"),
-#                                       tr("Amount:"), 37.56, -10000, 10000, 2, &ok,
-#                                       Qt::WindowFlags(), 1);
-#    if (ok)
-#        doubleLabel->setText(QString("$%1").arg(d));
-#//! [1]
-#}
-#
-#void Dialog::setItem()
-#{
-#//! [2]
-#    QStringList items;
-#    items << tr("Spring") << tr("Summer") << tr("Fall") << tr("Winter");
-#
-#    bool ok;
-#    QString item = QInputDialog::getItem(this, tr("QInputDialog::getItem()"),
-#                                         tr("Season:"), items, 0, false, &ok);
-#    if (ok && !item.isEmpty())
-#        itemLabel->setText(item);
-#//! [2]
-#}
-#
-#void Dialog::setText()
-#{
-#//! [3]
-#    bool ok;
-#    QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
-#                                         tr("User name:"), QLineEdit::Normal,
-#                                         QDir::home().dirName(), &ok);
-#    if (ok && !text.isEmpty())
-#        textLabel->setText(text);
-#//! [3]
-#}
-#
-#void Dialog::setMultiLineText()
-#{
-#//! [4]
-#    bool ok;
-#    QString text = QInputDialog::getMultiLineText(this, tr("QInputDialog::getMultiLineText()"),
-#                                                  tr("Address:"), "John Doe\nFreedom Street", &ok);
-#    if (ok && !text.isEmpty())
-#        multiLineTextLabel->setText(text);
-#//! [4]
-#}
-#
-#void Dialog::setColor()
-#{
-#    const QColorDialog::ColorDialogOptions options = QFlag(colorDialogOptionsWidget->value());
-#    const QColor color = QColorDialog::getColor(Qt::green, this, "Select Color", options);
-#
-#    if (color.isValid()) {
-#        colorLabel->setText(color.name());
-#        colorLabel->setPalette(QPalette(color));
-#        colorLabel->setAutoFillBackground(true);
-#    }
-#}
-#
-#void Dialog::setFont()
-#{
-#    const QFontDialog::FontDialogOptions options = QFlag(fontDialogOptionsWidget->value());
-#
-#    const QString &description = fontLabel->text();
-#    QFont defaultFont;
-#    if (!description.isEmpty())
-#        defaultFont.fromString(description);
-#
-#    bool ok;
-#    QFont font = QFontDialog::getFont(&ok, defaultFont, this, "Select Font", options);
-#    if (ok) {
-#        fontLabel->setText(font.key());
-#        fontLabel->setFont(font);
-#    }
-#}
-#
+    def setItemCB(self):
+        items = ["Spring", "Summer", "Fall", "Winter"]
+        item,ok = QInputDialog.getItem(self, "QInputDialog::getItem()",
+                                       "Season:", items, 0, False)
+        if ok and item:
+            self.itemLabel.setText(item)
+
+    def setTextCB(self):
+        text,ok = QInputDialog.getText(self, "QInputDialog::getText()",
+                                       "User name:", QLineEdit.EchoMode.Normal,
+                                       QDir.home().dirName())
+        if ok and text:
+            self.textLabel.setText(text)
+
+    def setMultiLineTextCB(self):
+        text,ok = QInputDialog.getMultiLineText(self, "QInputDialog::getMultiLineText()",
+                                                "Address:",
+                                                "John Doe\nFreedom Street")
+        if ok and text:
+            self.multiLineTextLabel.setText(text)
+
+    def setColorCB(self):
+#        options = QColorDialog.ColorDialogOption.DontUseNativeDialog
+#        options = QColorDialog.ColorDialogOption.NoButtons
+#        options = QColorDialog.ColorDialogOption.ShowAlphaChannel
+        options = QColorDialog().options()
+        color = QColorDialog.getColor(QtCore.Qt.GlobalColor.green, self,
+                                      "Select Color", options)
+        if color.isValid():
+            self.colorLabel.setText(color.name())
+            self.colorLabel.setPalette(QPalette(color))
+            self.colorLabel.setAutoFillBackground(True)
+
+    def setFontCB(self):
+        options = QFileDialog().options() 
+        print("OPTS: ", type(options))
+        description = self.fontLabel.text()
+        defaultFont = QFont()
+        if description:
+            defaultFont.fromString(description)
+        font,ok = QFontDialog.getFont(defaultFont, self, "Select Font")#, options)
+        if ok:
+            self.fontLabel.setText(font.key())
+            self.fontLabel.setFont(font)
+
 #void Dialog::setExistingDirectory()
 #{
 #    QFileDialog::Options options = QFlag(fileDialogOptionsWidget->value());
