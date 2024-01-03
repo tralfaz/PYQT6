@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import QHBoxLayout
 from PyQt6.QtWidgets import QInputDialog
 from PyQt6.QtWidgets import QLabel
 from PyQt6.QtWidgets import QLineEdit
+from PyQt6.QtWidgets import QMessageBox
 from PyQt6.QtWidgets import QPushButton
 from PyQt6.QtWidgets import QSizePolicy
 from PyQt6.QtWidgets import QSpacerItem
@@ -76,7 +77,7 @@ class Dialog(QWidget):
         toolbox = QToolBox()
         verticalLayout.addWidget(toolbox)
 
-        errorMessageDialog = QErrorMessage(self)
+        self.errorMessageDialog = QErrorMessage(self)
 
         frameStyle = QFrame.Shadow.Sunken | QFrame.Shape.Panel
 
@@ -120,6 +121,7 @@ class Dialog(QWidget):
         directoryButton = QPushButton("QFileDialog::getE&xistingDirectory()")
         directoryButton.clicked.connect(self.setExistingDirectoryCB)
 
+        self._openFileSelectedFilter = ""
         self.openFileNameLabel = QLabel()
         self.openFileNameLabel.setFrameStyle(frameStyle)
         openFileNameButton = QPushButton("QFileDialog::get&OpenFileName()")
@@ -132,37 +134,36 @@ class Dialog(QWidget):
         openFileNamesButton = QPushButton("QFileDialog::&getOpenFileNames()")
         openFileNamesButton.clicked.connect(self.setOpenFileNamesCB)
 
-        saveFileNameLabel = QLabel()
-        saveFileNameLabel.setFrameStyle(frameStyle)
+        self._saveFileSelectedFilter = ""
+        self.saveFileNameLabel = QLabel()
+        self.saveFileNameLabel.setFrameStyle(frameStyle)
         saveFileNameButton = QPushButton("QFileDialog::get&SaveFileName()")
+        saveFileNameButton.clicked.connect(self.setSaveFileNameCB)
 
-        criticalLabel = QLabel()
-        criticalLabel.setFrameStyle(frameStyle)
+        self.criticalLabel = QLabel()
+        self.criticalLabel.setFrameStyle(frameStyle)
         criticalButton = QPushButton("QMessageBox::critica&l()")
+        criticalButton.clicked.connect(self.criticalMessageCB)
 
-        informationLabel = QLabel()
-        informationLabel.setFrameStyle(frameStyle)
+        self.informationLabel = QLabel()
+        self.informationLabel.setFrameStyle(frameStyle)
         informationButton = QPushButton("QMessageBox::i&nformation()")
-
-        questionLabel = QLabel()
-        questionLabel.setFrameStyle(frameStyle)
+        informationButton.clicked.connect(self.informationMessageCB)
+        
+        self.questionLabel = QLabel()
+        self.questionLabel.setFrameStyle(frameStyle)
         questionButton = QPushButton("QMessageBox::&question()")
+        questionButton.clicked.connect(self.questionMessageCB)
 
-        warningLabel = QLabel()
-        warningLabel.setFrameStyle(frameStyle)
+        self.warningLabel = QLabel()
+        self.warningLabel.setFrameStyle(frameStyle)
         warningButton = QPushButton("QMessageBox::&warning()")
+        warningButton.clicked.connect(self.warningMessageCB)
 
         errorButton = QPushButton("QErrorMessage::showM&essage()")
+        errorButton.clicked.connect(self.errorMessageCB)
 
-#    connect(saveFileNameButton, &QAbstractButton::clicked,
-#            this, &Dialog::setSaveFileName);
-#    connect(criticalButton, &QAbstractButton::clicked, this, &Dialog::criticalMessage);
-#    connect(informationButton, &QAbstractButton::clicked,
-#            this, &Dialog::informationMessage);
-#    connect(questionButton, &QAbstractButton::clicked, this, &Dialog::questionMessage);
-#    connect(warningButton, &QAbstractButton::clicked, this, &Dialog::warningMessage);
-#    connect(errorButton, &QAbstractButton::clicked, this, &Dialog::errorMessage);
-
+        # InputDialog page
         page = QWidget()
         layout = QGridLayout(page)
         layout.setColumnStretch(1, 1)
@@ -185,6 +186,7 @@ class Dialog(QWidget):
 
         doNotUseNativeDialog = "Do not use native dialog"
 
+        # ColorDialog page
         page = QWidget()
         layout = QGridLayout(page)
         layout.setColumnStretch(1, 1)
@@ -202,6 +204,7 @@ class Dialog(QWidget):
         layout.addWidget(cdOptWGT, 2, 0, 1, 2)
         toolbox.addItem(page, "Color Dialog")
 
+        # FontDialog page
         page = QWidget()
         layout = QGridLayout(page)
         layout.setColumnStretch(1, 1)
@@ -223,6 +226,7 @@ class Dialog(QWidget):
         layout.addWidget(fdOptWGT, 2, 0, 1 ,2)
         toolbox.addItem(page, "Font Dialog")
 
+        # FileDialog page
         page = QWidget()
         layout = QGridLayout(page)
         layout.setColumnStretch(1, 1);
@@ -233,7 +237,7 @@ class Dialog(QWidget):
         layout.addWidget(openFileNamesButton, 2, 0)
         layout.addWidget(self.openFileNamesLabel, 2, 1)
         layout.addWidget(saveFileNameButton, 3, 0)
-        layout.addWidget(saveFileNameLabel, 3, 1)
+        layout.addWidget(self.saveFileNameLabel, 3, 1)
         fdOptWGT = self.fileDialogOptionsWidget = DialogOptionsWidget()
         fdOptWGT.setZeroOpts(QFileDialog.Option(0))
         fdopt = QFileDialog.Option
@@ -251,17 +255,18 @@ class Dialog(QWidget):
         layout.addWidget(fdOptWGT, 5, 0, 1 ,2)
         toolbox.addItem(page, "File Dialogs")
 
+        # MessageBox page
         page = QWidget()
         layout = QGridLayout(page)
         layout.setColumnStretch(1, 1)
         layout.addWidget(criticalButton, 0, 0)
-        layout.addWidget(criticalLabel, 0, 1)
+        layout.addWidget(self.criticalLabel, 0, 1)
         layout.addWidget(informationButton, 1, 0)
-        layout.addWidget(informationLabel, 1, 1)
+        layout.addWidget(self.informationLabel, 1, 1)
         layout.addWidget(questionButton, 2, 0)
-        layout.addWidget(questionLabel, 2, 1)
+        layout.addWidget(self.questionLabel, 2, 1)
         layout.addWidget(warningButton, 3, 0)
-        layout.addWidget(warningLabel, 3, 1)
+        layout.addWidget(self.warningLabel, 3, 1)
         layout.addWidget(errorButton, 4, 0)
         layout.addItem(QSpacerItem(0, 0, QSizePolicy.Policy.Ignored,
                                          QSizePolicy.Policy.MinimumExpanding),
@@ -369,101 +374,110 @@ class Dialog(QWidget):
             self._openFilesSelectedFilter = selFltr
             self.openFileNamesLabel.setText(", ".join(files))
 
-#void Dialog::setSaveFileName()
-#{
-#    const QFileDialog::Options options = QFlag(fileDialogOptionsWidget->value());
-#    QString selectedFilter;
-#    QString fileName = QFileDialog::getSaveFileName(this,
-#                                tr("QFileDialog::getSaveFileName()"),
-#                                saveFileNameLabel->text(),
-#                                tr("All Files (*);;Text Files (*.txt)"),
-#                                &selectedFilter,
-#                                options);
-#    if (!fileName.isEmpty())
-#        saveFileNameLabel->setText(fileName);
-#}
-#
-#void Dialog::criticalMessage()
-#{
-#    QMessageBox msgBox(QMessageBox::Critical, tr("QMessageBox::critical()"),
-#                              tr("Houston, we have a problem"), { }, this);
-#    msgBox.setInformativeText(tr("Activating the liquid oxygen stirring fans caused an explosion in one of the tanks. " \
-#                                 "Liquid oxygen levels are getting low. This may jeopardize the moon landing mission."));
-#    msgBox.addButton(QMessageBox::Abort);
-#    msgBox.addButton(QMessageBox::Retry);
-#    msgBox.addButton(QMessageBox::Ignore);
-#    int reply = msgBox.exec();
-#    if (reply == QMessageBox::Abort)
-#        criticalLabel->setText(tr("Abort"));
-#    else if (reply == QMessageBox::Retry)
-#        criticalLabel->setText(tr("Retry"));
-#    else
-#        criticalLabel->setText(tr("Ignore"));
-#}
-#
-#void Dialog::informationMessage()
-#{
-#    QMessageBox msgBox(QMessageBox::Information, tr("QMessageBox::information()"),
-#                              tr("Elvis has left the building."), { }, this);
-#    msgBox.setInformativeText(tr("This phrase was often used by public address announcers at the conclusion " \
-#                                 "of Elvis Presley concerts in order to disperse audiences who lingered in " \
-#                                 "hopes of an encore. It has since become a catchphrase and punchline."));
-#    if (msgBox.exec() == QMessageBox::Ok)
-#        informationLabel->setText(tr("OK"));
-#    else
-#        informationLabel->setText(tr("Escape"));
-#}
-#
-#void Dialog::questionMessage()
-#{
-#    QMessageBox msgBox(QMessageBox::Question, tr("QMessageBox::question()"),
-#                              tr("Would you like cheese with that?"), { }, this);
-#    msgBox.setInformativeText(tr("A cheeseburger is a hamburger topped with cheese. Traditionally, the slice of " \
-#                                 "cheese is placed on top of the meat patty. The cheese is usually added to the " \
-#                                 "cooking hamburger patty shortly before serving, which allows the cheese to melt."));
-#    msgBox.addButton(QMessageBox::Yes);
-#    msgBox.addButton(QMessageBox::No);
-#    msgBox.addButton(QMessageBox::Cancel);
-#    int reply = msgBox.exec();
-#    if (reply == QMessageBox::Yes)
-#        questionLabel->setText(tr("Yes"));
-#    else if (reply == QMessageBox::No)
-#        questionLabel->setText(tr("No"));
-#    else
-#        questionLabel->setText(tr("Cancel"));
-#}
-#
-#void Dialog::warningMessage()
-#{
-#    QMessageBox msgBox(QMessageBox::Warning, tr("QMessageBox::warning()"),
-#                              tr("Delete the only copy of your movie manuscript?"), { }, this);
-#    msgBox.setInformativeText(tr("You've been working on this manuscript for 738 days now. Hang in there!"));
-#    msgBox.setDetailedText("\"A long time ago in a galaxy far, far away....\"");
-#    auto *keepButton = msgBox.addButton(tr("&Keep"), QMessageBox::AcceptRole);
-#    auto *deleteButton = msgBox.addButton(tr("Delete"), QMessageBox::DestructiveRole);
-#    msgBox.exec();
-#    if (msgBox.clickedButton() == keepButton)
-#        warningLabel->setText(tr("Keep"));
-#    else if (msgBox.clickedButton() == deleteButton)
-#        warningLabel->setText(tr("Delete"));
-#    else
-#        warningLabel->setText("");
-#}
-#
-#void Dialog::errorMessage()
-#{
-#    errorMessageDialog->showMessage(
-#            tr("This dialog shows and remembers error messages. "
-#               "If the user chooses to not show the dialog again, the dialog "
-#               "will not appear again if QErrorMessage::showMessage() "
-#               "is called with the same message."));
-#    errorMessageDialog->showMessage(
-#            tr("You can queue up error messages, and they will be "
-#               "shown one after each other. Each message maintains "
-#               "its own state for whether it will be shown again "
-#               "the next time QErrorMessage::showMessage() is called "
-#               "with the same message."));
-#}
+    def setSaveFileNameCB(self):
+        options = self.fileDialogOptionsWidget.value()
+
+        caption  = "QFileDialog::getSaveFileName()"
+        dirName  = self.saveFileNameLabel.text()
+        filters  = "All Files (*);;Text Files (*.txt)"
+        initFltr = self._saveFileSelectedFilter
+        fileName,selFltr = QFileDialog.getSaveFileName(self, caption,
+                                                       dirName, filters,
+                                                       initFltr, options)
+        if fileName:
+            self.saveFileNameLabel.setText(fileName)
+            self._saveFileSelectedFilter = selFltr
+            
+    def criticalMessageCB(self):
+        msgBox = QMessageBox(QMessageBox.Icon.Critical,
+                             "QMessageBox::critical()",
+                             "Houston, we have a problem",
+                             QMessageBox.StandardButton.NoButton, self)
+        msgBox.setInformativeText("Activating the liquid oxygen stirring fans" +
+                                  " caused an explosion in one of the tanks. " +
+                                  "Liquid oxygen levels are getting low. This" +
+                                  " may jeopardize the moon landing mission.")
+        msgBox.addButton(QMessageBox.StandardButton.Abort)
+        msgBox.addButton(QMessageBox.StandardButton.Retry)
+        msgBox.addButton(QMessageBox.StandardButton.Ignore)
+        reply = msgBox.exec()
+        if reply == QMessageBox.StandardButton.Abort:
+            self.criticalLabel.setText("Abort")
+        elif reply == QMessageBox.StandardButton.Retry:
+            self.criticalLabel.setText("Retry")
+        else:
+            self.criticalLabel.setText("Ignore")
+
+    def informationMessageCB(self):
+        msgBox = QMessageBox(QMessageBox.Icon.Information,
+                             "QMessageBox::information()",
+                             "<B>INFO</B><P>Elvis has left the building.</P>",
+                             QMessageBox.StandardButton.NoButton, self)
+        msgBox.setInformativeText("This phrase was often used by public " +
+                                  "address announcers at the conclusion " +
+                                  "of Elvis Presley concerts in order to " +
+                                  "disperse audiences who lingered in " +
+                                  "hopes of an encore. It has since become " +
+                                  "a catchphrase and punchline.")
+        if msgBox.exec() == QMessageBox.StandardButton.Ok:
+            self.informationLabel.setText("OK")
+        else:
+            self.informationLabel.setText("Escape")
+
+    def questionMessageCB(self):
+        msgBox = QMessageBox(QMessageBox.Icon.Question,
+                             "QMessageBox::question()",
+                             "<B>QUESTION</B>" +
+                             "<P>Would you like cheese with that?</P>",
+                             QMessageBox.StandardButton.NoButton, self)
+        msgBox.setInformativeText("A cheeseburger is a hamburger topped with "+
+                                  "cheese. Traditionally, the slice of " +
+                                  "cheese is placed on top of the meat " +
+                                  "patty. The cheese is usually added to " +
+                                  "the cooking hamburger patty shortly " +
+                                  "before serving, which allows the cheese " +
+                                  "to melt.")
+        msgBox.addButton(QMessageBox.StandardButton.Yes)
+        msgBox.addButton(QMessageBox.StandardButton.No)
+        msgBox.addButton(QMessageBox.StandardButton.Cancel)
+        reply = msgBox.exec()
+        if reply == QMessageBox.StandardButton.Yes:
+            self.questionLabel.setText("Yes")
+        elif reply == QMessageBox.StandardButton.No:
+            self.questionLabel.setText("No")
+        else:
+            self.questionLabel.setText("Cancel")
+
+    def warningMessageCB(self):
+        msgBox = QMessageBox(QMessageBox.Icon.Warning,
+                             "QMessageBox::warning()",
+                             "Delete the only copy of your movie manuscript?",
+                             QMessageBox.StandardButton.NoButton, self)
+        msgBox.setInformativeText("You've been working on this manuscript " +
+                                  "for 738 days now. Hang in there!")
+        msgBox.setDetailedText('"A long time ago in a galaxy far, far away...."')
+        keepBTN = msgBox.addButton("&Keep", QMessageBox.ButtonRole.AcceptRole)
+        deleteBTN = msgBox.addButton("Delete", QMessageBox.ButtonRole.DestructiveRole)
+        msgBox.exec()
+        if msgBox.clickedButton() == keepBTN:
+            self.warningLabel.setText("Keep")
+        elif msgBox.clickedButton() == deleteBTN:
+            self.warningLabel.setText("Delete")
+        else:
+            self.warningLabel.setText("????")
+
+    def errorMessageCB(self): 
+        self.errorMessageDialog.showMessage(
+            "This dialog shows and remembers error messages. If the user " +
+            "chooses to not show the dialog again, the dialog will not " +
+            "appear again if QErrorMessage::showMessage() is called with " +
+            "the same message.")
+        self.errorMessageDialog.showMessage(
+            "You can queue up error messages, and they will be " +
+            "shown one after each other. Each message maintains " +
+            "its own state for whether it will be shown again " +
+            "the next time QErrorMessage::showMessage() is called " +
+            "with the same message.")
 
 
 
@@ -471,7 +485,6 @@ if __name__ == "__main__":
     import sys
 
     app = QApplication(sys.argv)
-
 
     #QGuiApplication::setApplicationDisplayName(Dialog::tr("Standard Dialogs"));
 
