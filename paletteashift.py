@@ -1,3 +1,5 @@
+import sys
+
 # Requires PyQt6 6.6
 #
 from PyQt6 import QtCore
@@ -79,13 +81,27 @@ class CenterWidget(QFrame):
 
     def _darkThemeCB(self):
         print("_darkThemeCB")
-        DarkPaletteApple(TestApp.instance())
-        DarkPaletteApple(self.window())
+        if sys.platform == "darwin":
+             DarkPaletteApple(TestApp.instance())
+             DarkPaletteApple(self.window())
+        elif sys.platform[0:3] == "win":
+             DarkPaletteApple(TestApp.instance())
+             DarkPaletteApple(self.window())
+        elif sys.platform == "linux":
+             DarkPaletteLinux(TestApp.instance())
+             DarkPaletteLinux(self.window())
         
     def _lightThemeCB(self):
         print("_lightThemeCB")
-        LightPaletteApple(TestApp.instance())
-        LightPaletteApple(self.window())
+        if sys.platform == "darwin":
+             LightPaletteApple(TestApp.instance())
+             LightPaletteApple(self.window())
+        elif sys.platform[0:3] == "win":
+             LightPaletteApple(TestApp.instance())
+             LightPaletteApple(self.window())
+        elif sys.platform == "linux":
+             LightPaletteLinux(TestApp.instance())
+             LightPaletteLinux(self.window())
 
 
 def DarkPaletteApple(wgt):
@@ -367,6 +383,120 @@ def LightPaletteApple(wgt):
 #    pal.setColor(cg, QPalette.ColorRole.ToolTipText,     QColor(0xff000000))
 #    pal.setColor(cg, QPalette.ColorRole.Window,          QColor(0xffececec))
 #    pal.setColor(cg, QPalette.ColorRole.WindowText,      QColor(0xd8000000))
+    wgt.setPalette(pal)
+
+
+def LightPaletteLinux(wgt):
+    pal = wgt.palette()
+    cg = QPalette.ColorGroup.Active
+    pal.setColor(cg, QPalette.ColorRole.AlternateBase,   QColor(0xffeae9e8))
+    pal.setColor(cg, QPalette.ColorRole.Base,            QColor(0xfffaf9f8))
+    pal.setColor(cg, QPalette.ColorRole.BrightText,      QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Button,          QColor(0xfffaf9f8))
+    pal.setColor(cg, QPalette.ColorRole.ButtonText,      QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.Dark,            QColor(0xffc8c7c6))
+    pal.setColor(cg, QPalette.ColorRole.Highlight,       QColor(0xff3584e4))
+    pal.setColor(cg, QPalette.ColorRole.HighlightedText, QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Light,           QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Link,            QColor(0xff0000ff))
+    pal.setColor(cg, QPalette.ColorRole.LinkVisited,     QColor(0xffff00ff))
+    pal.setColor(cg, QPalette.ColorRole.Mid,             QColor(0xffa0a0a4))
+    pal.setColor(cg, QPalette.ColorRole.NColorRoles,     QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.NoRole,          QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.PlaceholderText, QColor(0xff646464))
+    pal.setColor(cg, QPalette.ColorRole.Shadow,          QColor(0xffb0afaf))
+    pal.setColor(cg, QPalette.ColorRole.Text,            QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.ToolTipBase,     QColor(0xffffffdc))
+    pal.setColor(cg, QPalette.ColorRole.ToolTipText,     QColor(0xff2e3436))
+    pal.setColor(cg, QPalette.ColorRole.Window,          QColor(0xfffaf9f8))
+    pal.setColor(cg, QPalette.ColorRole.WindowText,      QColor(0xff000000))
+    cg = QPalette.ColorGroup.All
+    pal.setColor(cg, QPalette.ColorRole.AlternateBase,   QColor(0xffeae9e8))
+    pal.setColor(cg, QPalette.ColorRole.Base,            QColor(0xfffaf9f8))
+    pal.setColor(cg, QPalette.ColorRole.BrightText,      QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Button,          QColor(0xfffaf9f8))
+    pal.setColor(cg, QPalette.ColorRole.ButtonText,      QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.Dark,            QColor(0xffc8c7c6))
+    pal.setColor(cg, QPalette.ColorRole.Highlight,       QColor(0xff3584e4))
+    pal.setColor(cg, QPalette.ColorRole.HighlightedText, QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Light,           QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Link,            QColor(0xff0000ff))
+    pal.setColor(cg, QPalette.ColorRole.LinkVisited,     QColor(0xffff00ff))
+    pal.setColor(cg, QPalette.ColorRole.Mid,             QColor(0xffa0a0a4))
+#    pal.setColor(cg, QPalette.ColorRole.NColorRoles,     QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.NoRole,          QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.PlaceholderText, QColor(0xff646464))
+    pal.setColor(cg, QPalette.ColorRole.Shadow,          QColor(0xffb0afaf))
+    pal.setColor(cg, QPalette.ColorRole.Text,            QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.ToolTipBase,     QColor(0xffffffdc))
+    pal.setColor(cg, QPalette.ColorRole.ToolTipText,     QColor(0xff2e3436))
+    pal.setColor(cg, QPalette.ColorRole.Window,          QColor(0xfffaf9f8))
+    pal.setColor(cg, QPalette.ColorRole.WindowText,      QColor(0xff000000))
+    cg = QPalette.ColorGroup.Current
+    pal.setColor(cg, QPalette.ColorRole.AlternateBase,   QColor(0xffeae9e8))
+    pal.setColor(cg, QPalette.ColorRole.Base,            QColor(0xfffaf9f8))
+    pal.setColor(cg, QPalette.ColorRole.BrightText,      QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Button,          QColor(0xfffaf9f8))
+    pal.setColor(cg, QPalette.ColorRole.ButtonText,      QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.Dark,            QColor(0xffc8c7c6))
+    pal.setColor(cg, QPalette.ColorRole.Highlight,       QColor(0xff3584e4))
+    pal.setColor(cg, QPalette.ColorRole.HighlightedText, QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Light,           QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Link,            QColor(0xff0000ff))
+    pal.setColor(cg, QPalette.ColorRole.LinkVisited,     QColor(0xffff00ff))
+    pal.setColor(cg, QPalette.ColorRole.Mid,             QColor(0xffa0a0a4))
+    pal.setColor(cg, QPalette.ColorRole.NColorRoles,     QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.NoRole,          QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.PlaceholderText, QColor(0xff646464))
+    pal.setColor(cg, QPalette.ColorRole.Shadow,          QColor(0xffb0afaf))
+    pal.setColor(cg, QPalette.ColorRole.Text,            QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.ToolTipBase,     QColor(0xffffffdc))
+    pal.setColor(cg, QPalette.ColorRole.ToolTipText,     QColor(0xff2e3436))
+    pal.setColor(cg, QPalette.ColorRole.Window,          QColor(0xfffaf9f8))
+    pal.setColor(cg, QPalette.ColorRole.WindowText,      QColor(0xff000000))
+    cg = QPalette.ColorGroup.Disabled
+    pal.setColor(cg, QPalette.ColorRole.AlternateBase,   QColor(0xffeae9e8))
+    pal.setColor(cg, QPalette.ColorRole.Base,            QColor(0xffd4d0c8))
+    pal.setColor(cg, QPalette.ColorRole.BrightText,      QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Button,          QColor(0xffd4d0c8))
+    pal.setColor(cg, QPalette.ColorRole.ButtonText,      QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.Dark,            QColor(0xff6a6864))
+    pal.setColor(cg, QPalette.ColorRole.Highlight,       QColor(0xff3584e4))
+    pal.setColor(cg, QPalette.ColorRole.HighlightedText, QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.Light,           QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Link,            QColor(0xff0000ff))
+    pal.setColor(cg, QPalette.ColorRole.LinkVisited,     QColor(0xffff00ff))
+    pal.setColor(cg, QPalette.ColorRole.Mid,             QColor(0xffa0a0a4))
+    pal.setColor(cg, QPalette.ColorRole.NColorRoles,     QColor(0xff929595))
+    pal.setColor(cg, QPalette.ColorRole.NoRole,          QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.PlaceholderText, QColor(0xff646464))
+    pal.setColor(cg, QPalette.ColorRole.Shadow,          QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.Text,            QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.ToolTipBase,     QColor(0xffffffdc))
+    pal.setColor(cg, QPalette.ColorRole.ToolTipText,     QColor(0xff2e3436))
+    pal.setColor(cg, QPalette.ColorRole.Window,          QColor(0xffd4d0c8))
+    pal.setColor(cg, QPalette.ColorRole.WindowText,      QColor(0xff000000))
+    cg = QPalette.ColorGroup.Inactive
+    pal.setColor(cg, QPalette.ColorRole.AlternateBase,   QColor(0xffeae9e8))
+    pal.setColor(cg, QPalette.ColorRole.Base,            QColor(0xfffaf9f8))
+    pal.setColor(cg, QPalette.ColorRole.BrightText,      QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Button,          QColor(0xffd4d0c8))
+    pal.setColor(cg, QPalette.ColorRole.ButtonText,      QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.Dark,            QColor(0xff6a6864))
+    pal.setColor(cg, QPalette.ColorRole.Highlight,       QColor(0xff308cc6))
+    pal.setColor(cg, QPalette.ColorRole.HighlightedText, QColor(0xfff6f5f4))
+    pal.setColor(cg, QPalette.ColorRole.Light,           QColor(0xffffffff))
+    pal.setColor(cg, QPalette.ColorRole.Link,            QColor(0xff0000ff))
+    pal.setColor(cg, QPalette.ColorRole.LinkVisited,     QColor(0xffff00ff))
+    pal.setColor(cg, QPalette.ColorRole.Mid,             QColor(0xffa0a0a4))
+    pal.setColor(cg, QPalette.ColorRole.NoRole,          QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.PlaceholderText, QColor(0xff646464))
+    pal.setColor(cg, QPalette.ColorRole.Shadow,          QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.Text,            QColor(0xff000000))
+    pal.setColor(cg, QPalette.ColorRole.ToolTipBase,     QColor(0xffffffdc))
+    pal.setColor(cg, QPalette.ColorRole.ToolTipText,     QColor(0xff2e3436))
+    pal.setColor(cg, QPalette.ColorRole.Window,          QColor(0xfffaf9f8))
+    pal.setColor(cg, QPalette.ColorRole.WindowText,      QColor(0xff929595))
     wgt.setPalette(pal)
 
              
