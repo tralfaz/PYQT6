@@ -21,7 +21,7 @@ class MainWin(QMainWindow):
      def __init__(self, parent=None):
          super().__init__(parent)
 
-         self.setWindowTitle("TEST - ")
+         self.setWindowTitle("TEST - Theme Palette")
          self.setGeometry(300, 300, 500, 500)
 
          self.setCentralWidget(CenterWidget())
@@ -386,6 +386,9 @@ def LightPaletteApple(wgt):
     wgt.setPalette(pal)
 
 
+def DarkPaletteLinux(wgt):
+    DarkPaletteApple(wgt)
+
 def LightPaletteLinux(wgt):
     pal = wgt.palette()
     cg = QPalette.ColorGroup.Active
@@ -653,3 +656,6 @@ if __name__ == "__main__":
     
     status = app.exec()
     sys.exit(status)
+
+
+
