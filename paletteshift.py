@@ -868,7 +868,10 @@ if __name__ == "__main__":
     app = TestApp(sys.argv)
 
     app.applicationStateChanged.connect(AppStateChangeCB)
-
+    sh = app.styleHints()
+    cs = sh.colorScheme()
+    print(f"Color Scheme: {cs}")
+    
     pal = app.palette()
     DumpPalette(pal)
     
