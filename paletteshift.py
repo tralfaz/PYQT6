@@ -871,7 +871,9 @@ if __name__ == "__main__":
     sh = app.styleHints()
     cs = sh.colorScheme()
     print(f"Color Scheme: {cs}")
-    
+    if sys.platform[0:3] == "win":
+         app.setStyle("Windows")
+
     pal = app.palette()
     DumpPalette(pal)
     
